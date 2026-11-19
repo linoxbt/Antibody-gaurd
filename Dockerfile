@@ -1,4 +1,4 @@
-# Antibody Guard service (indexer + AI scorer endpoint). Build context: reactive/.
+# Antibody Guard service (indexer + AI scorer endpoint). Build context: the repository root.
 FROM node:22-slim
 ENV NODE_ENV=production
 WORKDIR /app

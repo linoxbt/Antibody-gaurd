@@ -218,7 +218,7 @@ await sleep(8_000);
 
 // 5. the scenarios
 const inbox: InboxMessage[] = readdirSync(new URL('../agent/inbox', import.meta.url)).sort().map((f) => JSON.parse(readFileSync(new URL(`../agent/inbox/${f}`, import.meta.url), 'utf8')));
-const outDir = new URL('../../docs/guard/agent-runs/', import.meta.url);
+const outDir = new URL('../docs/agent-runs/', import.meta.url);
 mkdirSync(outDir, { recursive: true });
 const has = (n: string) => L.loops.some((l: any) => l.name.startsWith(n));
 L.ai ??= {};

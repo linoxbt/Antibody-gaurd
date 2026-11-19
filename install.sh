@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# Install `guard`, the Antibody Guard command line: curl -fsSL https://antibody-guard.netlify.app/install.sh | bash
+# Install `guard`, the Antibody Guard command line: curl -fsSL https://antibody-guard-reactive.netlify.app/install.sh | bash
 # Needs git and Node.js 22+. Installs into ~/.antibody-guard/app and puts `guard` in ~/.local/bin.
 set -euo pipefail
-REPO="${GUARD_REPO:-https://github.com/linoxbt/Antibody}"
-REF="${GUARD_REF:-reactive-guard}"
+REPO="${GUARD_REPO:-https://github.com/linoxbt/antibody-guard}"
+REF="${GUARD_REF:-main}"
 APP="${GUARD_APP_DIR:-$HOME/.antibody-guard/app}"
 BIN="${GUARD_BIN_DIR:-$HOME/.local/bin}"
 
@@ -21,12 +21,14 @@ else
   mkdir -p "$(dirname "$APP")"
   git clone -q --depth 1 --branch "$REF" "$REPO" "$APP"
 fi
-( cd "$APP/reactive" && npm ci --omit=dev --ignore-scripts --no-audit --no-fund --loglevel=error )
+# the guard package is at the repository root (or in reactive/ on the original Antibody repository)
+PKG="$APP"; [ -f "$APP/reactive/package.json" ] && PKG="$APP/reactive"
+( cd "$PKG" && npm ci --omit=dev --ignore-scripts --no-audit --no-fund --loglevel=error )
 
 mkdir -p "$BIN"
 cat > "$BIN/guard" <<SH
 #!/bin/sh
-exec node "$APP/reactive/bin/guard.mjs" "\$@"
+exec node "$PKG/bin/guard.mjs" "\$@"
 SH
 chmod +x "$BIN/guard"
 echo "Installed: $BIN/guard ($(git -C "$APP" rev-parse --short HEAD))"

@@ -12,7 +12,7 @@ import { NETWORKS } from '../networks.ts';
 import { abiOf, clients, KEY_DIR, loadRecord, testnetKey, txUrl, addrUrl, type NetworkName } from '../scripts/lib.ts';
 
 const VERSION = '0.5.0';
-const API = (process.env.GUARD_API ?? 'https://antibody-guard.netlify.app').replace(/\/$/, '');
+const API = (process.env.GUARD_API ?? 'https://antibody-guard-reactive.netlify.app').replace(/\/$/, '');
 const CONFIG = join(KEY_DIR, 'config.json');
 const ETH = '0x0000000000000000000000000000000000000000';
 const CODES = ['None', 'Frozen', 'Quarantined', 'UnknownPayee', 'LabelMismatch', 'OverCap', 'OverDailyLimit', 'Duplicate', 'TransferFailed'];

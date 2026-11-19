@@ -4,7 +4,7 @@
   "type": "module",
   "description": "The console's wallet connection (Reown AppKit), bundled into one browser file by esbuild.",
   "scripts": {
-    "build": "esbuild wallet.ts --bundle --splitting --format=esm --minify --target=es2022 --outdir=dist --entry-names=wallet --chunk-names=w-[hash] --legal-comments=none --metafile=dist/meta.json --define:process.env.NODE_ENV='\"production\"' --define:global=globalThis"
+    "build": "node build.mjs"
   },
   "devDependencies": {
     "@reown/appkit": "^2.0.0",

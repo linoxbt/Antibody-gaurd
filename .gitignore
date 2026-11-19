@@ -1,0 +1,12 @@
+node_modules
+lib
+artifacts/
+cache/
+types/
+web-dist/
+wallet/dist/
+.netlify/
+*.key
+.env
+.env.*
+*.log

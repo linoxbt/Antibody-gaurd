@@ -78,5 +78,12 @@ mkdirSync(`${out}/assets/js/wallet`, { recursive: true });
 for (const f of readdirSync(`${root}wallet/dist`)) if (f.endsWith('.js')) cpSync(`${root}wallet/dist/${f}`, `${out}/assets/js/wallet/${f}`);
 // the guard command's installer
 cpSync(`${root}install.sh`, `${out}/install.sh`);
+// /api/* goes to the Guard service, same origin for the page (so its CSP stays 'self')
+const api = (process.env.GUARD_API_ORIGIN || 'https://antibody-guard-production.up.railway.app').replace(/\/+$/, '');
+if (!/^https:\/\/[a-z0-9.-]+(:\d+)?$/i.test(api)) throw new Error(`GUARD_API_ORIGIN must be an https origin, got ${api}`);
+writeFileSync(`${out}/_redirects`, `/api/*  ${api}/api/:splat  200!\n`);
+// for uploading web-dist as it is (no build): the same headers and redirects, nothing to build
+const toml = readFileSync(`${root}netlify.toml`, 'utf8');
+writeFileSync(`${out}/netlify.toml`, toml.replace(/\[build\][\s\S]*?(?=\[\[headers\]\])/, '[build]\n  publish = "."\n  command = "echo static"\n\n'));
 writeFileSync(`${out}/evidence.html`, page);
 console.log(`built web-dist: ${recorded.length} loops, ${contracts.current.length} current contracts, ${phase1.length} phase 1 proposals`);

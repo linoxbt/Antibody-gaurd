@@ -5,9 +5,9 @@ import { el } from './ui.js';
 import { sky, armReveals } from './motion.js';
 import { themeSwitch } from './theme.js';
 
-export const REPO = 'https://github.com/linoxbt/Antibody';
-export const TREE = `${REPO}/tree/reactive-guard`;
-export const BLOB = `${REPO}/blob/reactive-guard`;
+export const REPO = 'https://github.com/linoxbt/antibody-guard';
+export const TREE = `${REPO}/tree/main`;
+export const BLOB = `${REPO}/blob/main`;
 
 const PAGES = [
   { href: '/', id: 'home', label: 'Overview', hint: '00' },
@@ -83,7 +83,7 @@ export function mountShell(current) {
           { class: 'footer-grid' },
           el('div', {}, brand(), el('p', {}, 'An immune system for agent wallets.')),
           col('Product', [['Walkthrough', '/walkthrough'], ['Security', '/security'], ['Evidence', '/evidence'], ['Console', '/app'], ['Try the AI', '/app/scorer']]),
-          col('Build', [['Contracts', `${TREE}/reactive/contracts`, true], ['Build plan', `${BLOB}/docs/guard/PLAN.md`, true], ['Reactive MCP notes', `${BLOB}/docs/guard/reactive-mcp.md`, true]]),
+          col('Build', [['Contracts', `${TREE}/contracts`, true], ['Build plan', `${BLOB}/docs/PLAN.md`, true], ['Reactive MCP notes', `${BLOB}/docs/reactive-mcp.md`, true]]),
           col('Project', [['Source', TREE, true], ['Reactive Network', 'https://dev.reactive.network', true], ['Omni Buildathon', 'https://dorahacks.io/hackathon/reactive-omni-buildathon', true]]),
         ),
         el('div', { class: 'giant', 'aria-hidden': 'true' }, 'antibody'),

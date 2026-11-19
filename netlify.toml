@@ -1,8 +1,15 @@
-# Antibody Guard site (built from reactive/frontend by reactive/scripts/build-web.ts, deployed from the
-# reactive-guard branch). The Guard service on Railway answers /api/*, same origin.
+# Antibody Guard site. Netlify builds it from this repository: frontend/ plus the files generated from
+# deployments/ and abi/ by scripts/build-web.ts, and the wallet bundle from wallet/.
+# Build variables (set on the Netlify site; all optional, defaults in brackets):
+#   GUARD_API_ORIGIN  where /api/* goes  [https://antibody-guard-production.up.railway.app]
+#   REOWN_PROJECT_ID  the Reown (WalletConnect) project ID for wallet connection
+#   NODE_VERSION      22
 [build]
-  publish = "."
-  command = "echo static"
+  publish = "web-dist"
+  command = "npm ci --omit=dev --no-audit --no-fund && (cd wallet && npm ci --no-audit --no-fund) && npm run web"
+
+[build.environment]
+  NODE_VERSION = "22"
 
 [[headers]]
   for = "/*"
@@ -30,12 +37,6 @@
   for = "/evidence.json"
   [headers.values]
     Cache-Control = "no-cache"
-
-[[redirects]]
-  from = "/api/*"
-  to = "https://antibody-guard-production.up.railway.app/api/:splat"
-  status = 200
-  force = true
 
 # the console is a single-page app
 [[redirects]]

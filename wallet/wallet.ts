@@ -8,7 +8,8 @@ import { getAccount, getWalletClient, switchChain, watchAccount, disconnect } fr
 import { createPublicClient, http, type Abi, type Hex } from 'viem';
 
 /** Reown Cloud project (public: it identifies this site to WalletConnect, it is not a secret). */
-export const PROJECT_ID = 'd1bf7b7232b7d0fb7f0469d0adb29f5b';
+// set at build time from REOWN_PROJECT_ID (wallet/build.mjs); the default is this project's public ID
+export const PROJECT_ID: string = process.env.REOWN_PROJECT_ID || 'd1bf7b7232b7d0fb7f0469d0adb29f5b';
 
 const lasna = defineChain({
   id: 5318007,

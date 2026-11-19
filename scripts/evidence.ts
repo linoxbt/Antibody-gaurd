@@ -1,4 +1,4 @@
-// Re-reads every recorded transaction from the chain and writes docs/guard/evidence-<network>.md:
+// Re-reads every recorded transaction from the chain and writes docs/evidence-<network>.md:
 // what each step did, the vault events it emitted (with refusal codes decoded), and explorer links.
 import { writeFileSync } from 'node:fs';
 import { decodeEventLog, formatEther } from 'viem';
@@ -53,5 +53,5 @@ ${rec.agent ? `- Agent: \`${rec.agent}\`\n` : ''}${rec.payees ? `- Payees: ${Obj
 | --- | --- | --- | --- |
 ${rows.join('\n')}
 `;
-writeFileSync(new URL(`../../docs/guard/evidence-${FILE}.md`, import.meta.url), md);
+writeFileSync(new URL(`../docs/evidence-${FILE}.md`, import.meta.url), md);
 console.log(md);

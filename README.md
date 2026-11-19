@@ -2,10 +2,9 @@
 
 A guarded vault for an AI agent's funds, and a reactive contract that watches it from
 Reactive Network and acts on its own. Built for the Reactive Omni Buildathon; see
-[`docs/guard/PLAN.md`](../docs/guard/PLAN.md) for the phases.
+[`docs/PLAN.md`](docs/PLAN.md) for the phases.
 
 ```sh
-cd reactive
 npm ci
 npm run deps      # fetches reactive-lib-omni at a pinned commit into lib/ (not committed)
 npm run build     # hardhat build
@@ -20,9 +19,9 @@ npm run phase3-cross   # GuardReactive v3 replaces v2 and guards both vaults: le
 npm run phase4    # GuardReactive v4 + RiskOracle; the AI scorer and Steward run live (needs a model key, see below)
 npm run typecheck # the scripts and the agent
 npm run link-callbacks   # find each loop's callback transaction on the destination chain
-npm run evidence -- baseSepolia   # (or lasna) re-read every recorded tx from the chain into docs/guard/
+npm run evidence -- baseSepolia   # (or lasna) re-read every recorded tx from the chain into docs/
 npm run verify -- baseSepolia GuardVault <address> [creationTx]   # Sourcify
-npm run rmcp -- tools   # Reactive MCP tools (also in the repo .mcp.json); see docs/guard/reactive-mcp.md
+npm run rmcp -- tools   # Reactive MCP tools (also in the repo .mcp.json); see docs/reactive-mcp.md
 npm run deposit -- 0.2   # add fee reserves for GuardReactive (depositTo)
 npm run web       # builds the status site into web-dist/, with every deployment in deployments/
 ```
@@ -60,7 +59,7 @@ first contract, on two different chains (Base Sepolia and Lasna).
 - Model access: `LLM_BASE_URL` (default Fortytwo), `LLM_MODEL` (default `qwen/qwen3.8-27b`) and
   `LLM_API_KEY`. In this repository's cloud sessions the key is injected by the network proxy, so
   `npm run phase4` sets `NODE_USE_ENV_PROXY=1` to route Node's `fetch` through it.
-- Every run is saved in `docs/guard/agent-runs/` (the model's tool calls and results, never a key).
+- Every run is saved in `docs/agent-runs/` (the model's tool calls and results, never a key).
 
 ## The Guard service (`service/`) and the live dashboard
 
@@ -73,11 +72,10 @@ first contract, on two different chains (Base Sepolia and Lasna).
   asks GuardReactive to watch a vault: the service checks that its runtime code is GuardVault's, that its
   guardian is GuardReactive, and the cap (12 vaults), then sends `watch` from the registrar key, a role
   that may only watch, unwatch and immunize (2 per client per hour, 6 per hour overall).
-- Deployed as the Railway service `antibody-guard` (root directory `reactive/`, `reactive/Dockerfile`)
-  from the `reactive-guard` branch, at https://antibody-guard-production.up.railway.app. Variables:
+- Deployed as the Railway service `antibody-guard` (`Dockerfile` in this repository), at https://antibody-guard-production.up.railway.app. Variables:
   `PORT=8787`, `LOOKBACK_SECONDS`, `GUARD_SCORER_KEY` (the testnet key allowed on the RiskOracle) and
   `GUARD_REGISTRAR_KEY` and `LLM_API_KEY` (the model key; without it `/api/score` answers 503).
-- The site is Antibody's frontend, ported in `frontend/` (landing, walkthrough, security, evidence, and the console at `/app`) on https://antibody-guard.netlify.app; Netlify sends `/api/*`
+- The site is Antibody's frontend, ported in `frontend/` (landing, walkthrough, security, evidence, and the console at `/app`) on https://antibody-guard-reactive.netlify.app; Netlify sends `/api/*`
   to the service, so the page's CSP stays `'self'`. Run both locally with `npm run service` and `npm run web`.
 
 ## Your own vault: the `guard` CLI and the wallet console
@@ -85,7 +83,7 @@ first contract, on two different chains (Base Sepolia and Lasna).
 Anyone can deploy their own GuardVault and have the shared GuardReactive watch it, from a terminal or
 from a browser wallet.
 
-- **CLI.** `curl -fsSL https://antibody-guard.netlify.app/install.sh | bash` installs `guard` (it clones
+- **CLI.** `curl -fsSL https://antibody-guard-reactive.netlify.app/install.sh | bash` installs `guard` (it clones
   this branch into `~/.antibody-guard/app`). Then `guard keys new`, `guard vault deploy`, `guard guardian`,
   `guard watch`, `guard payee add|activate`, `guard limit`, `guard schedule add`, `guard propose`,
   `guard freeze|unfreeze|release|withdraw`, `guard status`, `guard loops`. Every command takes `--chain`,
@@ -95,3 +93,18 @@ from a browser wallet.
   asks Reactive to watch it, and manages payees, limits, schedules and payments; it also manages the
   demo vaults for their owner. *Public actions* holds what anyone may do: top up GuardReactive's
   lREACT reserves, retry a failed freeze or quarantine, and activate a payee whose delay has passed.
+
+## Deploying the site
+
+Netlify builds the site from this repository (`netlify.toml`: install, bundle the wallet, `npm run web`,
+publish `web-dist/`). Site variables, all optional:
+
+| Variable | Used for | Default |
+| --- | --- | --- |
+| `GUARD_API_ORIGIN` | where `/api/*` is proxied (the Guard service) | `https://antibody-guard-production.up.railway.app` |
+| `REOWN_PROJECT_ID` | the Reown (WalletConnect) project ID baked into the wallet bundle | this project's public ID |
+| `NODE_VERSION` | the build's Node.js | `22` |
+
+The Guard service's own variables (`GUARD_SCORER_KEY`, `GUARD_REGISTRAR_KEY`, `LLM_API_KEY`,
+`LOOKBACK_SECONDS`, `PORT`) belong on the service (Railway), never on the site: the site is static and
+public.
