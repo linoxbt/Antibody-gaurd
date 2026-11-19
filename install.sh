@@ -2,7 +2,7 @@
 # Install `guard`, the Antibody Guard command line: curl -fsSL https://antibody-guard-reactive.netlify.app/install.sh | bash
 # Needs git and Node.js 22+. Installs into ~/.antibody-guard/app and puts `guard` in ~/.local/bin.
 set -euo pipefail
-REPO="${GUARD_REPO:-https://github.com/linoxbt/antibody-guard}"
+REPO="${GUARD_REPO:-https://github.com/linoxbt/Antibody-gaurd}"
 REF="${GUARD_REF:-main}"
 APP="${GUARD_APP_DIR:-$HOME/.antibody-guard/app}"
 BIN="${GUARD_BIN_DIR:-$HOME/.local/bin}"

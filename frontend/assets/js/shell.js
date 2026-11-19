@@ -5,7 +5,7 @@ import { el } from './ui.js';
 import { sky, armReveals } from './motion.js';
 import { themeSwitch } from './theme.js';
 
-export const REPO = 'https://github.com/linoxbt/antibody-guard';
+export const REPO = 'https://github.com/linoxbt/Antibody-gaurd';
 export const TREE = `${REPO}/tree/main`;
 export const BLOB = `${REPO}/blob/main`;
 

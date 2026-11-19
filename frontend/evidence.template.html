@@ -42,9 +42,9 @@
 <div class="table-wrap"><table class="table"><thead><tr><th>What the agent tried</th><th>Result</th><th>Transaction</th></tr></thead><tbody><!--PHASE1--></tbody></table></div>
 <h2 id="the-ai">The AI</h2>
 <!--AI-->
-<p>The scorer can only report an address that appears in the message, never a registered payee, and a report can only quarantine. Every model run is saved in <a href="https://github.com/linoxbt/antibody-guard/tree/main/docs/agent-runs" target="_blank" rel="noopener">docs/agent-runs</a>.</p>
+<p>The scorer can only report an address that appears in the message, never a registered payee, and a report can only quarantine. Every model run is saved in <a href="https://github.com/linoxbt/Antibody-gaurd/tree/main/docs/agent-runs" target="_blank" rel="noopener">docs/agent-runs</a>.</p>
 <h2 id="reproduce">Reproduce it</h2>
-<pre><code>git clone https://github.com/linoxbt/antibody-guard && cd antibody-guard
+<pre><code>git clone https://github.com/linoxbt/Antibody-gaurd && cd Antibody-gaurd
 npm ci && npm run deps && npm run build && npm test     # 65 Solidity tests
 npm run evidence -- lasna-v4                            # re-read the loops from the chains
 npm run rmcp -- get_rc_health '{"rc":"&lt;GuardReactive&gt;"}'   # Reactive MCP diagnosis</code></pre>
