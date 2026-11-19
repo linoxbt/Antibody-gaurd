@@ -1,0 +1,57 @@
+name: publish
+# Publishes the SDK (antibody-guard) and the MCP server (antibody-guard-mcp) to npm.
+# Needs the repository secret NPM_TOKEN (an npm Automation or Granular token with publish rights).
+# Run it from the Actions tab (Run workflow), or push a tag like v0.1.0. A version already on npm is skipped.
+on:
+  workflow_dispatch:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  id-token: write # npm provenance: the package page shows it was built here, from this commit
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: Check the token
+        run: |
+          if [ -z "$NODE_AUTH_TOKEN" ]; then echo "::error::Add the repository secret NPM_TOKEN first"; exit 1; fi
+          npm whoami
+
+      - name: SDK - test and build
+        working-directory: sdk
+        run: npm ci && npm run typecheck && npm test && npm run build
+      - name: SDK - publish
+        working-directory: sdk
+        run: |
+          v=$(node -p "require('./package.json').version")
+          if npm view "antibody-guard@$v" version >/dev/null 2>&1; then echo "antibody-guard@$v is already on npm"; exit 0; fi
+          npm publish --access public --provenance || npm publish --access public
+
+      - name: MCP - build
+        working-directory: mcp
+        run: npm ci && npx tsc -p tsconfig.json && npm run build
+      - name: MCP - publish
+        working-directory: mcp
+        run: |
+          v=$(node -p "require('./package.json').version")
+          if npm view "antibody-guard-mcp@$v" version >/dev/null 2>&1; then echo "antibody-guard-mcp@$v is already on npm"; exit 0; fi
+          npm publish --access public --provenance || npm publish --access public
+
+      - name: Check what was published
+        run: |
+          npm view antibody-guard name version dist.tarball
+          npm view antibody-guard-mcp name version bin
