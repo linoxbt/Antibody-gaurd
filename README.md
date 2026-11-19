@@ -362,6 +362,11 @@ claude mcp add --transport http antibody-guard https://antibody-guard-reactive.n
 claude mcp add antibody-guard -- npx -y antibody-guard-mcp
 ```
 
+Every call agents make (through the hosted endpoint, the npm server, the SDK or the API) appears live on
+the console's [**Activity**](https://antibody-guard-reactive.netlify.app/app/activity) page, next to what
+happened on-chain: the client (Claude, Cursor, ...), the tool, what it asked about and the answer. The text
+of scored messages and IP addresses are never recorded.
+
 **API**: public, rate-limited, CORS open; [OpenAPI 3.1](https://antibody-guard-reactive.netlify.app/api/v1/openapi.json).
 
 ```sh
@@ -376,6 +381,7 @@ curl https://antibody-guard-reactive.netlify.app/api/v1/memories/baseSepolia/0xd
 | `GET` | `/api/v1/memories/{chain}/{memory}/entries/{id}` | A memory entry, its source, and whether it is usable |
 | `GET` | `/api/v1/memories/{chain}/{memory}/sources/{source}` | Everything a source planted, and whether it is quarantined |
 | `GET` | `/api/v1/status`, `/vaults`, `/vaults/{chain}/{address}`, `/memories`, `/loops`, `/events` | The rest of what GuardReactive knows |
+| `GET` | `/api/v1/activity` | The public activity feed (also on the console's [Activity](https://antibody-guard-reactive.netlify.app/app/activity) page) |
 | `POST` | `/api/v1/score` | The AI risk scorer |
 | `POST` | `/api/v1/watch` | `{ chain, address }`: GuardReactive watches your vault or memory |
 
