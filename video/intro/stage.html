@@ -1,0 +1,496 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8" />
+<!-- Antibody Guard intro (no voice, ~42 s). Cut to the music: Deep Techno Ambience from 27.312 s, so its bass drop
+     lands at 10.908 s and the beat (110 BPM, 0.5457 s) drives every cut after it. window.render(t) draws frame t;
+     window.CUES is the sound-cue sheet on the same clock. -->
+<style>
+@font-face { font-family: 'DM Sans'; src: url(assets/dm-sans-latin-wght-normal.woff2) format('woff2'); font-weight: 100 1000; }
+@font-face { font-family: 'JetBrains Mono'; src: url(assets/jetbrains-mono-latin-wght-normal.woff2) format('woff2'); font-weight: 100 800; }
+:root { --bg: #030407; --text: #f4f6fb; --muted: #7c879b; --accent: #2b7fff; --accent-hi: #7ab1fe; --ok: #3ddc97; --amb: #fbbf5a; --bad: #ff5c7a; --ice: #9fe7ff;
+  --sans: 'DM Sans', system-ui, sans-serif; --mono: 'JetBrains Mono', ui-monospace, monospace; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 1920px; height: 1080px; overflow: hidden; background: var(--bg); }
+#stage { position: absolute; inset: 0; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--sans); }
+#world { position: absolute; inset: 0; transform-origin: 50% 50%; }
+canvas { position: absolute; inset: 0; }
+.scene { position: absolute; inset: 0; opacity: 0; display: none; }
+.abs { position: absolute; }
+.center { position: absolute; left: 0; right: 0; text-align: center; }
+.h1 { font-weight: 500; letter-spacing: -0.04em; line-height: 1.02; }
+.word { display: inline-block; }
+.tail { background: linear-gradient(90deg, #f4f6fb 0%, #c9d1e0 40%, #6e7891 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.blue { background: linear-gradient(90deg, #a6caff, #2b7fff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.red { color: #ff8aa0; }
+.glass { background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.12); border-radius: 22px; box-shadow: 0 1px 0 rgba(255,255,255,.06) inset, 0 40px 90px -40px rgba(0,0,0,.95); }
+.solid { background: rgba(8,10,16,.94); }
+.mono { font-family: var(--mono); }
+.k { font-family: var(--mono); font-size: 18px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.chip { display: inline-flex; align-items: center; gap: 14px; padding: 16px 30px; border-radius: 999px; font-size: 34px; white-space: nowrap; }
+.dot { width: 12px; height: 12px; border-radius: 50%; display: inline-block; box-shadow: 0 0 18px currentColor; background: currentColor; flex: none; }
+.ok { color: var(--ok); } .bad { color: var(--bad); } .blu { color: var(--accent-hi); } .mut { color: var(--muted); }
+.node { position: absolute; width: 230px; margin-left: -115px; padding: 14px 16px; border-radius: 16px; border: 2px solid rgba(122,177,254,.55); background: rgba(8,10,16,.94); font-size: 22px; text-align: center; white-space: nowrap; }
+.node small { display: block; font: 14px var(--mono); margin-top: 4px; color: var(--muted); }
+.badge { position: absolute; right: -14px; top: -15px; padding: 4px 11px; border-radius: 999px; font: 700 13px var(--mono); letter-spacing: .08em; opacity: 0; background: #ff5c7a; color: #1a0207; }
+.rule { display: flex; align-items: center; gap: 20px; font-size: 30px; padding: 12px 0; }
+.rule .tick { width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(255,255,255,.2); display: grid; place-items: center; font-size: 22px; color: transparent; flex: none; }
+.mrow { display: flex; align-items: center; gap: 16px; font-size: 28px; padding: 16px 20px; border-radius: 14px; background: rgba(255,255,255,.035); margin-top: 12px; border: 1px solid rgba(255,255,255,.07); white-space: nowrap; }
+.pill { margin-left: auto; padding: 6px 16px; border-radius: 999px; font: 500 18px var(--mono); border: 1px solid; }
+.shot { position: absolute; left: 160px; top: 90px; width: 1600px; height: 900px; border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,.14); box-shadow: 0 60px 140px -50px #000, 0 0 140px -30px rgba(43,127,255,.45); opacity: 0; }
+.shot img { position: absolute; left: 0; top: 0; width: 1600px; height: 900px; transform-origin: 0 0; }
+#grain { position: absolute; inset: -50px; opacity: .07; mix-blend-mode: overlay; pointer-events: none; }
+#vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(120% 90% at 50% 45%, transparent 52%, rgba(0,0,0,.72) 100%); }
+#flash { position: absolute; inset: 0; background: #dfe9ff; opacity: 0; mix-blend-mode: screen; pointer-events: none; }
+#redflash { position: absolute; inset: 0; background: #ff2d55; opacity: 0; mix-blend-mode: screen; pointer-events: none; }
+#bars { position: absolute; left: 0; right: 0; height: 0; background: #000; }
+#scan { position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(255,255,255,.035) 0 2px, transparent 2px 5px); opacity: 0; }
+</style>
+</head>
+<body>
+<div id="stage">
+<div id="world">
+  <canvas id="bg" width="1920" height="1080"></canvas>
+
+  <!-- A: the threat (pre-drop) -->
+  <section class="scene" id="s-a">
+    <div class="center h1" id="a-l1" style="top:330px;font-size:120px"></div>
+    <div class="center h1" id="a-l2" style="top:470px;font-size:120px"></div>
+    <div class="glass abs solid" id="a-mail" style="left:590px;top:150px;width:740px;padding:26px 32px;border-color:rgba(251,191,90,.55)">
+      <div class="k" style="color:#fbbf5a">incoming · accounts@northwind-supplies.co</div>
+      <div style="font-size:32px;font-weight:500;margin-top:12px">URGENT: updated bank details</div>
+      <div class="mono" style="font-size:22px;margin-top:10px;color:#ff8aa0">pay 0x0000…bad5c0de today</div>
+    </div>
+    <svg class="abs" width="1920" height="1080" style="left:0;top:0;overflow:visible">
+      <path id="a-pl" d="M 860 330 C 860 480, 520 480, 520 600" stroke="#ff5c7a" stroke-width="4" fill="none" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+      <path id="a-pr" d="M 1060 330 C 1060 480, 1400 480, 1400 600" stroke="#ff5c7a" stroke-width="4" fill="none" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+    </svg>
+    <div class="glass abs solid" id="a-mem" style="left:250px;top:600px;width:540px;padding:24px 28px;border-color:rgba(255,92,122,.6)">
+      <div class="k">agent memory</div><div style="font-size:30px;margin-top:10px">A lie, <span class="red">remembered</span></div>
+    </div>
+    <div class="glass abs solid" id="a-wal" style="left:1130px;top:600px;width:540px;padding:24px 28px;border-color:rgba(255,92,122,.6)">
+      <div class="k">agent wallet</div><div style="font-size:30px;margin-top:10px"><span id="a-bal" class="mono">12,400</span> USDC → <span class="red">gone</span></div>
+    </div>
+    <div class="center h1" id="a-two" style="top:400px;font-size:150px">One email.<br/><span class="red">Two attacks.</span></div>
+  </section>
+
+  <!-- B: the drop, the mark -->
+  <section class="scene" id="s-b">
+    <div class="abs" id="b-halo" style="left:960px;top:400px;width:1000px;height:1000px;margin:-500px 0 0 -500px;border-radius:50%;background:radial-gradient(circle,rgba(43,127,255,.42),rgba(43,127,255,0) 60%)"></div>
+    <svg class="abs" id="b-mark" viewBox="0 0 64 64" style="left:830px;top:270px;width:260px;height:260px;overflow:visible">
+      <defs>
+        <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity=".95"/><stop offset=".5" stop-color="#A6CAFF" stop-opacity=".55"/><stop offset="1" stop-color="#2B7FFF" stop-opacity=".25"/></linearGradient>
+        <linearGradient id="arm" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="1" stop-color="#C9D6EE"/></linearGradient>
+        <radialGradient id="tip"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".45" stop-color="#7AB1FE"/><stop offset="1" stop-color="#2B7FFF" stop-opacity="0"/></radialGradient>
+      </defs>
+      <circle id="b-ring" cx="32" cy="32" r="28.5" fill="none" stroke="url(#ring)" stroke-width="1.2" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" transform="rotate(-90 32 32)"/>
+      <path id="b-arms" d="M32 50V34.5M32 34.5 20 20.5M32 34.5 44 20.5" fill="none" stroke="url(#arm)" stroke-width="4.6" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/>
+      <path id="b-inner" d="M24.2 30.6 16.6 21.8M39.8 30.6 47.4 21.8" fill="none" stroke="#7AB1FE" stroke-width="1.8" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" opacity=".9"/>
+      <circle id="b-t1" cx="17.4" cy="17.6" r="5.2" fill="url(#tip)" opacity="0"/><circle id="b-t2" cx="46.6" cy="17.6" r="5.2" fill="url(#tip)" opacity="0"/>
+      <circle cx="32" cy="34.5" r="1.5" fill="#030407"/>
+    </svg>
+    <div class="center" id="b-word" style="top:560px;font-size:140px;font-weight:500;letter-spacing:-.045em"></div>
+    <div class="center" id="b-sub" style="top:745px;font-size:44px;color:#c9d1e0">An immune system for <span style="color:#fff">AI agents.</span></div>
+  </section>
+
+  <!-- M1: propose, the vault decides -->
+  <section class="scene" id="s-m1">
+    <div class="abs h1" id="m1-t1" style="left:150px;top:190px;font-size:96px">The agent<br/><span class="tail">proposes.</span></div>
+    <div class="abs h1" id="m1-t2" style="left:150px;top:520px;font-size:96px">The vault<br/><span class="blue">decides.</span></div>
+    <div class="glass abs solid" id="m1-v" style="left:1000px;top:170px;width:780px;padding:24px 34px 18px">
+      <div class="k" style="margin-bottom:6px">GuardVault · on-chain</div>
+      <div class="mono" style="font-size:22px;color:#c9d1e0;margin-bottom:10px">propose 0.001 ETH → <span class="red">0x…e2e0bad1119</span> as "alice"</div>
+      <div class="rule" id="m1-r0"><span class="tick">✓</span>Registered payee</div>
+      <div class="rule" id="m1-r1"><span class="tick">✓</span>Label matches</div>
+      <div class="rule" id="m1-r2"><span class="tick">✓</span>Under the cap</div>
+      <div class="rule" id="m1-r3"><span class="tick">✓</span>Daily limit</div>
+      <div class="rule" id="m1-r4"><span class="tick">✓</span>No duplicate</div>
+    </div>
+    <div class="abs" id="m1-stamp" style="left:1390px;top:720px;margin-left:-300px;width:600px;height:130px;border:5px solid var(--bad);border-radius:22px;display:grid;place-items:center;font:700 62px var(--mono);letter-spacing:.14em;color:var(--bad);background:rgba(20,3,8,.8);box-shadow:0 0 120px rgba(255,92,122,.5);opacity:0">REFUSED</div>
+  </section>
+
+  <!-- M2: Reactive, quarantined everywhere -->
+  <section class="scene" id="s-m2">
+    <svg class="abs" id="m2-w" width="1920" height="1080" style="left:0;top:0;overflow:visible"></svg>
+    <div class="abs" id="m2-core" style="left:960px;top:500px;width:270px;height:270px;margin:-135px 0 0 -135px;border-radius:50%;display:grid;place-items:center;text-align:center;background:radial-gradient(circle,rgba(43,127,255,.32),rgba(8,10,16,.96) 68%);border:1.5px solid rgba(122,177,254,.65);box-shadow:0 0 100px rgba(43,127,255,.4)">
+      <div><img src="assets/mark.svg" style="width:66px;height:66px"/><div style="font-size:27px;font-weight:500;margin-top:4px">GuardReactive</div><div class="mono mut" style="font-size:14px;margin-top:4px">Reactive Network</div></div>
+    </div>
+    <div id="m2-nodes"></div>
+    <div class="center h1" id="m2-t" style="top:70px;font-size:76px">Caught once. <span class="red">Quarantined everywhere.</span></div>
+    <div class="center" id="m2-stats" style="top:905px;display:flex;justify-content:center;gap:22px">
+      <span class="chip glass" id="m2-s0"><b>7 / 7</b><span class="mut" style="font-size:26px">contracts</span></span>
+      <span class="chip glass" id="m2-s1"><b>2 s</b><span class="mut" style="font-size:26px">median reaction</span></span>
+      <span class="chip glass" id="m2-s2"><b>0</b><span class="mut" style="font-size:26px">servers · keepers · humans</span></span>
+    </div>
+  </section>
+
+  <!-- M3: memory -->
+  <section class="scene" id="s-m3">
+    <div class="abs h1" id="m3-t" style="left:150px;top:200px;font-size:96px">Poisoned memory,<br/><span class="red">unusable</span> in <span id="m3-n">8</span> s.</div>
+    <div class="glass abs solid" id="m3-box" style="left:150px;top:520px;width:1620px;padding:22px 30px 30px">
+      <div class="k">GuardMemory · every entry carries its source</div>
+      <div class="mrow" id="m3-r0"><span class="mono mut">#1</span>Northwind · pay to 0x51f2…a1ce<span class="pill ok" style="border-color:rgba(61,220,151,.5)">usable</span></div>
+      <div class="mrow" id="m3-r1"><span class="mono mut">#2</span>“Northwind’s new address: 0x…c0de”<span class="pill" id="m3-p1">usable</span></div>
+      <div class="mrow" id="m3-r2"><span class="mono mut">#3</span>“Use the new address for every invoice”<span class="pill" id="m3-p2">usable</span></div>
+    </div>
+  </section>
+
+  <!-- M4: the AI scores -->
+  <section class="scene" id="s-m4">
+    <div class="abs" id="m4-g" style="left:180px;top:200px;width:700px;height:520px">
+      <svg viewBox="0 0 200 130" width="700" height="455"><path d="M 20 110 A 80 80 0 0 1 180 110" stroke="rgba(255,255,255,.1)" stroke-width="13" fill="none" stroke-linecap="round"/><path id="m4-arc" d="M 20 110 A 80 80 0 0 1 180 110" stroke="#ff5c7a" stroke-width="13" fill="none" stroke-linecap="round" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1"/></svg>
+      <div class="abs" style="left:0;right:0;top:200px;text-align:center"><div id="m4-n" class="h1" style="font-size:170px">0</div><div class="k" style="margin-top:6px">AI risk score</div></div>
+    </div>
+    <div class="abs h1" id="m4-t1" style="left:980px;top:250px;font-size:84px">The AI reads<br/>the message.</div>
+    <div class="abs h1" id="m4-t2" style="left:980px;top:500px;font-size:84px"><span class="red">95</span> → <span class="blue">on-chain.</span></div>
+    <div class="abs" id="m4-t3" style="left:984px;top:640px;font-size:34px;color:#c9d1e0">It can only restrict. It never pays. It never unfreezes.</div>
+  </section>
+
+  <!-- M5: the live app -->
+  <section class="scene" id="s-m5">
+    <div class="shot" id="m5-0"><img src="shots/atk-ai.png"/></div>
+    <div class="shot" id="m5-1"><img src="shots/loops.png"/></div>
+    <div class="shot" id="m5-2"><img src="shots/memory.png"/></div>
+    <div class="shot" id="m5-3"><img src="shots/activity-mcp.png"/></div>
+    <div class="abs" id="m5-lbl" style="left:160px;top:36px;display:flex;align-items:center;gap:14px;font:500 22px var(--mono);letter-spacing:.12em;color:#c9d1e0"><span class="dot ok"></span>LIVE ON REACTIVE · BASE · ETHEREUM — EVERY NUMBER IS REAL</div>
+  </section>
+
+  <!-- M6: plug it in -->
+  <section class="scene" id="s-m6">
+    <div class="center h1" id="m6-t" style="top:300px;font-size:110px">Plug it into <span class="blue">any agent.</span></div>
+    <div class="center" id="m6-c" style="top:560px;display:flex;justify-content:center;gap:24px">
+      <span class="chip glass" id="m6-c0"><span class="dot blu"></span>Claude connector</span>
+      <span class="chip glass" id="m6-c1"><span class="dot blu"></span>MCP server</span>
+      <span class="chip glass" id="m6-c2"><span class="dot blu"></span>TypeScript SDK</span>
+      <span class="chip glass" id="m6-c3"><span class="dot blu"></span>Public API</span>
+    </div>
+  </section>
+
+  <!-- E: Fooled once. Never twice. End card. -->
+  <section class="scene" id="s-e">
+    <div class="center h1" id="e-1" style="top:420px;font-size:130px">Fooled once.</div>
+    <div class="center h1" id="e-2" style="top:420px;font-size:170px"><span class="blue">Never twice.</span></div>
+    <div class="abs" id="e-end" style="left:0;top:0;width:1920px;height:1080px">
+      <img src="assets/mark.svg" id="e-mark" style="position:absolute;left:890px;top:220px;width:140px;height:140px"/>
+      <div class="center" id="e-word" style="top:385px;font-size:124px;font-weight:500;letter-spacing:-.045em">antibody <span class="tail">guard</span></div>
+      <div class="center" id="e-sub" style="top:555px;font-size:38px;color:#c9d1e0">An immune system for AI agents.</div>
+      <div class="center mono" id="e-url" style="top:660px;font-size:30px;color:var(--accent-hi)">antibody-guard-reactive.netlify.app</div>
+      <div class="center mono" id="e-tr" style="top:730px;font-size:19px;letter-spacing:.16em;color:var(--muted)">CLAUDE CONNECTOR · MCP · SDK · API &nbsp;—&nbsp; BUILT ON REACTIVE NETWORK</div>
+    </div>
+  </section>
+  <canvas id="fx" width="1920" height="1080"></canvas>
+</div>
+  <div id="scan"></div>
+  <canvas id="grain" width="1020" height="590"></canvas>
+  <div id="vignette"></div>
+  <div id="flash"></div>
+  <div id="redflash"></div>
+</div>
+
+<script>
+const TL = window.__TL || { duration: 42, fps: 30 };
+const $ = (id) => document.getElementById(id);
+const cl = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
+const P = (t, a, d) => cl((t - a) / d);
+const eo = (x) => 1 - Math.pow(1 - x, 3);
+const e5 = (x) => 1 - Math.pow(1 - x, 5);
+const eio = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const ex = (x) => (x >= 1 ? 1 : 1 - Math.pow(2, -10 * x));
+const back = (x) => { const c1 = 1.7, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+const mix = (a, b, k) => a + (b - a) * k;
+function st(el, o = {}) {
+  if (typeof el === 'string') el = $(el);
+  const { op = 1, x = 0, y = 0, s = 1, r = 0, blur = 0 } = o;
+  el.style.opacity = op;
+  el.style.transform = `translate(${x}px, ${y}px) scale(${s}) rotate(${r}deg)`;
+  el.style.filter = blur > 0.05 ? `blur(${blur}px)` : 'none';
+}
+function rise(el, t, a, d = 0.45, dy = 50, out = Infinity, outD = 0.3) {
+  const k = e5(P(t, a, d)), ko = P(t, out, outD);
+  st(el, { op: k * (1 - ko), y: (1 - k) * dy - ko * 30, blur: (1 - k) * 14 + ko * 10, s: 1 + ko * 0.04 });
+}
+function slam(el, t, a, d = 0.35, from = 1.6, out = Infinity, outD = 0.25) {
+  const k = back(P(t, a, d)), ko = P(t, out, outD);
+  st(el, { op: P(t, a, 0.08) * (1 - ko), s: mix(from, 1, k) * (1 + ko * 0.08), blur: (1 - P(t, a, d * 0.6)) * 10 + ko * 12 });
+}
+function pop(el, t, a, d = 0.4, from = 0.8, out = Infinity, outD = 0.25) {
+  const k = back(P(t, a, d)), ko = P(t, out, outD);
+  st(el, { op: P(t, a, 0.12) * (1 - ko), s: mix(from, 1, k), y: ko * -20, blur: ko * 8 });
+}
+function words(id, html) { $(id).innerHTML = html; return [...$(id).querySelectorAll('.word')]; }
+function wordsIn(ws, t, a, step = 0.09, d = 0.45, out = Infinity) { ws.forEach((w, i) => { const k = e5(P(t, a + i * step, d)), ko = P(t, out + i * 0.03, 0.25); st(w, { op: k * (1 - ko), y: (1 - k) * 60 - ko * 30, blur: (1 - k) * 16 + ko * 10 }); }); }
+
+// beat grid (music: 110 BPM, bass drop at D)
+const B = 0.5457, PULSE = 1.0911, D = 10.908, BAR = 4 * B;
+const beat = (n) => D + n * B; // n beats after the drop
+const T = { b: D, m1: beat(8), m2: beat(16), m3: beat(24), m4: beat(28), m5: beat(32), m6: beat(36), e1: beat(40), e2: beat(43), e3: beat(45) };
+
+// ---------- background + particles ----------
+const bg = $('bg').getContext('2d'), fx = $('fx').getContext('2d');
+let seed = 11; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const stars = Array.from({ length: 300 }, () => ({ x: rnd() * 1920, y: rnd() * 1080, r: rnd() * 1.4 + 0.2, p: rnd() * 6.28, sp: 0.4 + rnd() * 1.2, z: 0.3 + rnd() }));
+const sparks = Array.from({ length: 140 }, () => ({ a: rnd() * 6.283, v: 300 + rnd() * 1300, r: 1 + rnd() * 2.6, l: 0.6 + rnd() * 1.2 }));
+const grainC = $('grain'), gctx = grainC.getContext('2d');
+const grains = Array.from({ length: 6 }, () => { const c = document.createElement('canvas'); c.width = 1020; c.height = 590; const x = c.getContext('2d'); const im = x.createImageData(1020, 590); for (let i = 0; i < im.data.length; i += 4) { const v = rnd() * 255; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 255; } x.putImageData(im, 0, 0); return c; });
+function redness(t) { return Math.max(P(t, 7.5, 0.6) * (1 - P(t, 10.3, 0.4)), 0.6 * P(t, T.m3, 0.2) * (1 - P(t, T.m4 - 0.2, 0.3))); }
+function drawBg(t) {
+  const red = redness(t), lift = t < D ? 0.6 + 0.4 * P(t, 0, D) : 1;
+  bg.fillStyle = '#030407'; bg.fillRect(0, 0, 1920, 1080);
+  const pulse = t < D ? Math.exp(-((t % PULSE)) * 5) * 0.08 : Math.exp(-(((t - D) % B + B) % B) * 7) * 0.05;
+  const gx = 960 + Math.sin(t * 0.13) * 380, gy = 520 + Math.cos(t * 0.09) * 160;
+  const g = bg.createRadialGradient(gx, gy, 0, gx, gy, 950);
+  const c = (b) => `rgba(${Math.round(mix(43, 255, red))},${Math.round(mix(127, 60, red))},${Math.round(mix(255, 90, red))},${b})`;
+  g.addColorStop(0, c((0.15 + pulse) * lift)); g.addColorStop(0.5, c(0.05 * lift)); g.addColorStop(1, 'rgba(0,0,0,0)');
+  bg.fillStyle = g; bg.fillRect(0, 0, 1920, 1080);
+  bg.save(); bg.translate(960, 540); bg.rotate(t * 0.03);
+  bg.strokeStyle = `rgba(166,202,255,${0.1 + pulse})`; bg.lineWidth = 1.2; bg.beginPath(); bg.arc(0, 0, 620, 0, Math.PI * 2); bg.stroke();
+  bg.strokeStyle = 'rgba(166,202,255,0.05)'; bg.beginPath(); bg.arc(0, 0, 880, 0, Math.PI * 2); bg.stroke();
+  bg.restore();
+  const speed = t > D ? 60 : 8;
+  for (const s of stars) {
+    const tw = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(t * s.sp + s.p));
+    const x = (s.x - t * speed * s.z + 1920 * 40) % 1920;
+    bg.fillStyle = `rgba(220,232,255,${0.55 * tw * s.z * lift})`;
+    bg.fillRect(x, s.y, s.r * (t > D ? 1 + s.z * 3 : 1), s.r * 0.9);
+  }
+}
+function drawFx(t) {
+  fx.clearRect(0, 0, 1920, 1080);
+  // spark burst on the drop and on "Never twice."
+  for (const [t0, cx, cy, col] of [[D, 960, 400, '170,205,255'], [T.e2, 960, 520, '120,170,255']]) {
+    const k = t - t0;
+    if (k < 0 || k > 1.8) continue;
+    for (const p of sparks) {
+      const d = p.v * (1 - Math.exp(-k * 3)) / 3;
+      const a = Math.max(0, 1 - k / p.l);
+      fx.fillStyle = `rgba(${col},${a})`;
+      fx.beginPath(); fx.arc(cx + Math.cos(p.a) * d, cy + Math.sin(p.a) * d * 0.7, p.r, 0, 6.283); fx.fill();
+    }
+    const rr = 40 + 1400 * e5(cl(k / 1.2));
+    fx.strokeStyle = `rgba(${col},${0.6 * (1 - cl(k / 1.2))})`; fx.lineWidth = 3; fx.beginPath(); fx.arc(cx, cy, rr, 0, 6.283); fx.stroke();
+  }
+}
+
+// ---------- A: the threat ----------
+const A1 = words('a-l1', ['AI', 'agents', 'now', 'hold'].map((w) => `<span class="word">${w}</span>`).join(' ') + ' <span class="word tail">money.</span>');
+const A2 = words('a-l2', '<span class="word">And</span> <span class="word">their</span> <span class="word blue">memory.</span>');
+function sA(t) {
+  wordsIn(A1, t, PULSE * 1 - 0.05, 0.1, 0.5, PULSE * 5 - 0.35);
+  wordsIn(A2, t, PULSE * 3 - 0.05, 0.12, 0.5, PULSE * 5 - 0.35);
+  const up = eio(P(t, PULSE * 3 - 0.3, 0.5));
+  st('a-l1', { op: 1, y: -up * 50 }); st('a-l2', { op: 1, y: -up * 30 });
+  const out = PULSE * 8 - 0.25;
+  slam('a-mail', t, PULSE * 5, 0.4, 1.3, out);
+  const gl = (P(t, PULSE * 5 + 0.05, 0.02) * (1 - P(t, PULSE * 5 + 0.22, 0.02))) + (P(t, PULSE * 6 + 0.5, 0.02) * (1 - P(t, PULSE * 6 + 0.62, 0.02)));
+  $('a-mail').style.textShadow = gl ? '-7px 0 rgba(255,92,122,.85), 7px 0 rgba(80,200,255,.75)' : 'none';
+  $('a-mail').style.transform += gl ? ` translateX(${Math.sin(t * 120) * 14}px)` : '';
+  $('a-pl').style.strokeDashoffset = 1 - e5(P(t, PULSE * 6, 0.35)); $('a-pr').style.strokeDashoffset = 1 - e5(P(t, PULSE * 7, 0.35));
+  $('a-pl').style.opacity = $('a-pr').style.opacity = 1 - P(t, out, 0.25);
+  slam('a-mem', t, PULSE * 6 + 0.3, 0.35, 1.25, out);
+  slam('a-wal', t, PULSE * 7 + 0.3, 0.35, 1.25, out);
+  $('a-bal').textContent = Math.round(12400 * (1 - eo(P(t, PULSE * 7 + 0.4, 0.6)))).toLocaleString('en-US');
+  // "One email. Two attacks." then everything is pulled into the dark before the drop
+  slam('a-two', t, PULSE * 8, 0.4, 1.4);
+  const suck = eio(P(t, PULSE * 9 + 0.1, D - PULSE * 9 - 0.2));
+  $('a-two').style.transform += ` scale(${1 - suck * 0.7})`; $('a-two').style.opacity *= 1 - suck; $('a-two').style.filter = `blur(${suck * 18}px)`;
+  const gj = P(t, PULSE * 8 + 0.6, 0.02) * (1 - P(t, PULSE * 8 + 0.75, 0.02));
+  $('a-two').style.textShadow = gj ? '-9px 0 rgba(255,92,122,.9), 9px 0 rgba(80,200,255,.8)' : 'none';
+}
+
+// ---------- B: the drop ----------
+$('b-word').innerHTML = 'antibody'.split('').map((c) => `<span class="word">${c}</span>`).join('') + '<span class="word tail">&nbsp;guard</span>';
+const BW = [...$('b-word').querySelectorAll('.word')];
+function sB(t) {
+  const a = D;
+  $('b-ring').style.strokeDashoffset = 1 - ex(P(t, a, 0.7));
+  $('b-arms').style.strokeDashoffset = 1 - eio(P(t, a + 0.25, 0.45));
+  $('b-inner').style.strokeDashoffset = 1 - eio(P(t, a + 0.5, 0.35));
+  const tp = back(P(t, a + B * 2, 0.4));
+  ['b-t1', 'b-t2'].forEach((id) => { $(id).style.opacity = P(t, a + B * 2, 0.1); $(id).setAttribute('r', String(5.2 * tp)); });
+  const out = T.m1 - 0.3;
+  st('b-mark', { op: 1 - P(t, out, 0.3), s: mix(1.35, 1, e5(P(t, a, 0.9))) * (1 + 0.015 * Math.sin(t * 2)) * (1 + P(t, out, 0.3) * 0.3), blur: P(t, out, 0.3) * 12 });
+  st('b-halo', { op: e5(P(t, a, 0.6)) * (0.8 + 0.2 * Math.sin(t * 3)) * (1 - P(t, out, 0.3)), s: mix(0.3, 1, e5(P(t, a, 1.0))) });
+  BW.forEach((w, i) => { const k = e5(P(t, a + B * 3 + i * 0.04 + (i === 8 ? 0.12 : 0), 0.45)), ko = P(t, out, 0.3); st(w, { op: k * (1 - ko), y: (1 - k) * 50 - ko * 20, blur: (1 - k) * 12 + ko * 10 }); });
+  rise('b-sub', t, a + B * 5, 0.45, 30, out);
+}
+
+// ---------- M1: the vault ----------
+function sM1(t) {
+  const a = T.m1, out = T.m2 - 0.25;
+  rise('m1-t1', t, a, 0.4, 60, out); rise('m1-t2', t, a + B * 2, 0.4, 60, out);
+  slam('m1-v', t, a + B, 0.35, 1.15, out);
+  for (let i = 0; i < 5; i++) {
+    const at = a + B * (1.5 + i * 0.5), tick = $(`m1-r${i}`).querySelector('.tick');
+    // the first check fails: an address the vault has never seen
+    const bad = i === 0, on = t >= at && (bad || false);
+    const col = on ? '#ff5c7a' : null;
+    tick.textContent = '✕'; tick.style.color = col ? '#1a0207' : 'transparent'; tick.style.background = col || 'transparent'; tick.style.borderColor = col || 'rgba(255,255,255,.2)';
+    tick.style.transform = `scale(${on ? back(P(t, at, 0.3)) : 1})`;
+    $(`m1-r${i}`).style.opacity = i === 0 ? 1 : 0.35;
+  }
+  slam('m1-stamp', t, a + B * 3, 0.3, 2.2, out);
+  $('m1-stamp').style.transform += ' rotate(-5deg)';
+}
+
+// ---------- M2: Reactive ----------
+const NODES = [[330, 300, 'Base · vault'], [330, 520, 'Base · vault'], [330, 740, 'Base · vault'], [1590, 300, 'Base · vault'], [1590, 520, 'Base · vault'], [1590, 740, 'Ethereum · vault'], [960, 800, 'Base · memory']];
+$('m2-nodes').innerHTML = NODES.map(([x, y, l], i) => `<div class="node" id="m2n${i}" style="left:${x}px;top:${y - 36}px">${l}<span class="badge" id="m2b${i}">QUARANTINED</span></div>`).join('');
+function sM2(t) {
+  const a = T.m2, out = T.m3 - 0.2, wave = a + B * 4;
+  pop('m2-core', t, a, 0.4, 0.5, out);
+  let svg = '';
+  NODES.forEach(([x, y], i) => {
+    const at = a + B * 0.5 + i * B * 0.25;
+    pop(`m2n${i}`, t, at, 0.35, 0.6, out);
+    const qd = Math.hypot(x - 960, y - 500), qa = wave + qd / 1400;
+    const q = t >= qa;
+    const b = $(`m2b${i}`); b.style.opacity = q ? 1 : 0; b.style.transform = `scale(${q ? back(P(t, qa, 0.3)) : 1})`;
+    $(`m2n${i}`).style.borderColor = q ? 'rgba(255,92,122,.8)' : '';
+    $(`m2n${i}`).style.boxShadow = q ? `0 0 ${50 * (1 - P(t, qa, 1))}px rgba(255,92,122,.7)` : '';
+    if (t > at && t < out + 0.3) {
+      const on = e5(P(t, at, 0.35)), col = q ? '#ff5c7a' : '#7ab1fe';
+      svg += `<line x1="${x}" y1="${y}" x2="${mix(x, 960, on)}" y2="${mix(y, 500, on)}" stroke="${col}" stroke-width="2" opacity=".55" stroke-dasharray="6 8" stroke-dashoffset="${-t * 60}"/>`;
+      for (let j = 0; j < 2; j++) { const p = (t * 1.1 + i * 0.37 + j * 0.5) % 1; svg += `<circle cx="${mix(x, 960, p)}" cy="${mix(y, 500, p)}" r="5" fill="${col}" opacity="${Math.sin(p * Math.PI)}"/>`; }
+    }
+  });
+  const w = P(t, wave, 0.9);
+  if (w > 0 && w < 1) svg += `<circle cx="960" cy="500" r="${135 + 1100 * e5(w)}" fill="none" stroke="#ff5c7a" stroke-width="${6 * (1 - w) + 1}" opacity="${1 - w}"/>`;
+  $('m2-w').innerHTML = svg; $('m2-w').style.opacity = 1 - P(t, out, 0.3);
+  rise('m2-t', t, wave - 0.05, 0.4, -40, out);
+  [0, 1, 2].forEach((i) => pop(`m2-s${i}`, t, wave + B * (1 + i), 0.35, 0.8, out));
+  st('m2-stats', { op: 1 });
+}
+
+// ---------- M3: memory ----------
+function sM3(t) {
+  const a = T.m3, out = T.m4 - 0.2;
+  rise('m3-t', t, a, 0.4, 60, out);
+  $('m3-n').textContent = String(Math.max(1, Math.round(8 * e5(P(t, a + 0.1, B * 3)))));
+  rise('m3-box', t, a + 0.1, 0.4, 60, out);
+  [1, 2].forEach((i) => {
+    const at = a + B * (1 + i), on = t >= at, p = $(`m3-p${i}`), r = $(`m3-r${i}`);
+    p.textContent = on ? 'source quarantined' : 'usable'; p.className = 'pill ' + (on ? 'bad' : 'ok');
+    p.style.borderColor = on ? 'rgba(255,92,122,.6)' : 'rgba(61,220,151,.5)';
+    p.style.transform = `scale(${on ? back(P(t, at, 0.3)) : 1})`;
+    r.style.borderColor = on ? 'rgba(255,92,122,.55)' : ''; r.style.background = on ? 'rgba(255,92,122,.08)' : ''; r.style.textDecoration = on ? 'line-through rgba(255,92,122,.6)' : 'none';
+  });
+}
+
+// ---------- M4: the AI scores ----------
+function sM4(t) {
+  const a = T.m4, out = T.m5 - 0.15;
+  pop('m4-g', t, a, 0.35, 0.8, out);
+  const g = e5(P(t, a + 0.1, B * 1.6));
+  $('m4-arc').style.strokeDashoffset = 1 - 0.95 * g; $('m4-n').textContent = String(Math.round(95 * g));
+  $('m4-n').style.color = g > 0.84 ? '#ff8aa0' : '#f4f6fb';
+  rise('m4-t1', t, a, 0.4, 50, out); rise('m4-t2', t, a + B * 2, 0.35, 50, out); rise('m4-t3', t, a + B * 3, 0.35, 30, out);
+}
+
+// ---------- M5: the live app, cut on the beat ----------
+const ZOOM = [[1550, 576, 1.55], [1550, 590, 1.7], [1860, 1330, 1.18], [1860, 1200, 1.32]];
+function sM5(t) {
+  const a = T.m5;
+  for (let i = 0; i < 4; i++) {
+    const s0 = a + i * B, s1 = s0 + B, el = $(`m5-${i}`);
+    const on = t >= s0 - 0.001 && t < (i === 3 ? T.m6 - 0.05 : s1);
+    el.style.opacity = on ? 1 : 0;
+    const k = P(t, s0, B);
+    const [cx, cy, z0] = ZOOM[i], z = z0 * (1 + 0.06 * k);
+    const img = el.querySelector('img');
+    img.style.transform = `translate(${800 - (cx / 2) * z}px, ${450 - (cy / 2) * z}px) scale(${z})`;
+    const hit = 1 - P(t, s0, 0.12);
+    el.style.filter = on && hit > 0 ? `brightness(${1 + hit * 0.8})` : 'none';
+    el.style.transform = `scale(${0.92 + 0.03 * k}) translateX(${on && hit > 0.5 ? (i % 2 ? 12 : -12) : 0}px)`;
+  }
+  const lk = P(t, a, 0.25) * (1 - P(t, T.m6 - 0.1, 0.1));
+  st('m5-lbl', { op: lk });
+}
+
+// ---------- M6: plug it in ----------
+function sM6(t) {
+  const a = T.m6, out = T.e1 - 0.12;
+  rise('m6-t', t, a, 0.4, 60, out);
+  [0, 1, 2, 3].forEach((i) => slam(`m6-c${i}`, t, a + B * (1 + i * 0.75), 0.3, 1.5, out));
+  st('m6-c', { op: 1 });
+}
+
+// ---------- E: the end ----------
+function sE(t) {
+  const k1 = e5(P(t, T.e1 + 0.05, 0.5));
+  st('e-1', { op: k1 * (1 - P(t, T.e2 - 0.1, 0.1)), y: (1 - k1) * 30, blur: (1 - k1) * 10, s: 1 + 0.03 * P(t, T.e1, 1.6) });
+  slam('e-2', t, T.e2, 0.4, 1.8, T.e3 - 0.15, 0.3);
+  const end = T.e3;
+  st('e-end', { op: P(t, end, 0.3) * (1 - P(t, TL.duration - 1.4, 1.2)) });
+  st('e-mark', { op: 1, s: mix(1.4, 1, back(P(t, end, 0.5))) * (1 + 0.015 * Math.sin(t * 2)) });
+  rise('e-word', t, end + 0.1, 0.5, 40);
+  rise('e-sub', t, end + B * 2, 0.5, 30);
+  rise('e-url', t, end + B * 4, 0.5, 30);
+  rise('e-tr', t, end + B * 6, 0.5, 30);
+}
+
+const SCENES = [['a', 0, D + 0.05, sA], ['b', D - 0.02, T.m1 + 0.05, sB], ['m1', T.m1 - 0.02, T.m2 + 0.05, sM1], ['m2', T.m2 - 0.02, T.m3 + 0.05, sM2], ['m3', T.m3 - 0.02, T.m4 + 0.05, sM3], ['m4', T.m4 - 0.02, T.m5 + 0.05, sM4], ['m5', T.m5 - 0.02, T.m6 + 0.02, sM5], ['m6', T.m6 - 0.02, T.e1 + 0.05, sM6], ['e', T.e1 - 0.02, 99, sE]];
+// moments that shake the frame and flash it: [time, strength]
+const HITS = [[D, 1], [T.m1 + B * 3, 0.5], [T.m2 + B * 4, 0.6], [T.e2, 1], [T.e3, 0.35]];
+
+window.render = function render(t) {
+  drawBg(t);
+  for (const [id, a, b, f] of SCENES) { const el = $('s-' + id); const on = t >= a && t < b; el.style.display = on ? 'block' : 'none'; el.style.opacity = on ? 1 : 0; if (on) f(t); }
+  drawFx(t);
+  // camera shake on the hits, a slow push the rest of the time
+  let sx = 0, sy = 0, sr = 0;
+  for (const [h, g] of HITS) { const k = t - h; if (k >= 0 && k < 0.6) { const a = g * Math.exp(-k * 9); sx += Math.sin(k * 90) * 18 * a; sy += Math.cos(k * 73) * 12 * a; sr += Math.sin(k * 60) * 0.5 * a; } }
+  const push = 1 + 0.02 * ((t - (t < D ? 0 : D)) % (BAR * 2)) / (BAR * 2);
+  $('world').style.transform = `translate(${sx}px, ${sy}px) rotate(${sr}deg) scale(${push})`;
+  let f = 0; for (const [h, g] of HITS) if (t >= h) f += 0.75 * g * Math.exp(-(t - h) * 7);
+  $('flash').style.opacity = Math.min(0.85, f);
+  let rf = 0; for (const h of [PULSE * 8, PULSE * 6 + 0.3, PULSE * 7 + 0.3]) if (t >= h) rf += 0.22 * Math.exp(-(t - h) * 8);
+  $('redflash').style.opacity = rf;
+  $('scan').style.opacity = t < D ? 0.5 : (t >= T.m5 && t < T.m6 ? 0.35 : 0.12);
+  gctx.drawImage(grains[Math.floor(t * 24) % grains.length], 0, 0);
+  grainC.style.transform = `scale(2) translate(${(Math.floor(t * 24) * 37) % 40 - 20}px, ${(Math.floor(t * 24) * 53) % 40 - 20}px)`;
+  // a hard black just before the drop, and the fade at the end
+  const pre = P(t, D - 0.32, 0.18) * (1 - P(t, D, 0.001));
+  $('stage').style.filter = `brightness(${eo(P(t, 0, 0.6)) * (1 - P(t, TL.duration - 1.0, 1.0)) * (1 - pre)})`;
+};
+
+window.CUES = (() => {
+  const c = [], q = (t, k, g = 1) => c.push([+t.toFixed(3), k, g]);
+  // pre-drop: a heartbeat on each pulse, the threat building
+  for (let i = 0; i < 10; i++) q(i * PULSE, 'thump', 0.35 + i * 0.04);
+  q(PULSE * 1, 'whoosh', 0.35); q(PULSE * 3, 'whoosh', 0.35);
+  q(PULSE * 5, 'braam', 0.55); q(PULSE * 5 + 0.05, 'glitch', 0.6); q(PULSE * 6 + 0.5, 'glitch', 0.45);
+  q(PULSE * 6, 'swoosh', 0.45); q(PULSE * 6 + 0.3, 'hit', 0.6); q(PULSE * 7, 'swoosh', 0.45); q(PULSE * 7 + 0.3, 'hit', 0.6); q(PULSE * 7 + 0.4, 'data:0.8', 0.35);
+  q(PULSE * 8, 'braam', 0.85); q(PULSE * 8, 'alarm', 0.35); q(PULSE * 8 + 0.6, 'glitch', 0.6);
+  q(D, 'reverse', 0.9); q(D, 'riser', 0.7);
+  // the drop
+  q(D, 'impact', 1.0); q(D, 'boom', 0.9); q(D, 'shimmer', 0.6); q(D + B * 2, 'chime', 0.45);
+  for (let i = 0; i < 9; i++) q(D + B * 3 + i * 0.04 + (i === 8 ? 0.12 : 0), 'tick', 0.18);
+  q(T.m1 - 0.3, 'whoosh', 0.6);
+  // vault
+  q(T.m1 + B, 'swoosh', 0.45); q(T.m1 + B * 1.5, 'error', 0.6); q(T.m1 + B * 3, 'stamp', 0.9); q(T.m1 + B * 3, 'hit', 0.6);
+  q(T.m2 - 0.3, 'whoosh', 0.6);
+  // reactive
+  q(T.m2, 'pop', 0.5); for (let i = 0; i < 7; i++) q(T.m2 + B * 0.5 + i * B * 0.25, 'blip', 0.3);
+  q(T.m2 + B * 4, 'sweep', 0.9); q(T.m2 + B * 4, 'impact', 0.7); [1, 2, 3].forEach((i) => q(T.m2 + B * (4 + i), 'pop', 0.45));
+  q(T.m3 - 0.25, 'whoosh', 0.55);
+  // memory
+  q(T.m3 + 0.1, 'data:1.2', 0.3); q(T.m3 + B * 2, 'lock', 0.7); q(T.m3 + B * 3, 'lock', 0.7);
+  q(T.m4 - 0.2, 'swoosh', 0.5);
+  // AI
+  q(T.m4 + 0.05, 'scan', 0.5); q(T.m4 + 0.1, 'riser', 0.35); q(T.m4 + B * 1.6, 'hit', 0.7); q(T.m4 + B * 2, 'lock', 0.55);
+  q(T.m5 - 0.15, 'whoosh', 0.5);
+  // live app: a cut on every beat
+  for (let i = 0; i < 4; i++) { q(T.m5 + i * B, 'glitch', 0.35); q(T.m5 + i * B, 'hit', 0.35); }
+  q(T.m6 - 0.1, 'whoosh', 0.55);
+  [0, 1, 2, 3].forEach((i) => q(T.m6 + B * (1 + i * 0.75), 'pop', 0.6));
+  // the drop-out and the last hit
+  q(T.e1, 'reverse', 0.5); q(T.e1 + 0.05, 'thump', 0.6);
+  q(T.e2, 'impact', 1.0); q(T.e2, 'boom', 0.95); q(T.e2, 'braam', 0.8); q(T.e2, 'shimmer', 0.55);
+  q(T.e3, 'whoosh', 0.4); q(T.e3 + 0.1, 'chime', 0.55);
+  return c.sort((x, y) => x[0] - y[0]);
+})();
+window.MUSIC = { offset: 27.312, dropout: [T.e1 - 0.03, T.e2], fadeOut: [TL.duration - 2.6, TL.duration] };
+window.READY = true;
+</script>
+</body>
+</html>

@@ -11,3 +11,4 @@ timeline.json
 cues.json
 segs.txt
 .venv/
+!intro/timeline.json

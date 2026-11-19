@@ -336,4 +336,5 @@ def main():
     print('done', round(N / SR, 1), 's')
 
 
-main()
+if __name__ == '__main__':
+    main()
