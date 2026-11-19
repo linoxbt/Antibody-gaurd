@@ -12,3 +12,7 @@ cues.json
 segs.txt
 .venv/
 !intro/timeline.json
+__pycache__/
+intro/assets
+intro/sfx
+intro/shots
