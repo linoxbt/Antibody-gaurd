@@ -1,0 +1,121 @@
+[
+ {
+  "id": "open",
+  "lead": 2.0,
+  "tail": 0.6,
+  "lines": [
+   "AI agents hold money now.",
+   "They pay invoices. And they remember what they read.",
+   "So one poisoned email can do two things at once: plant a lie in the agent's memory, and send its money to whoever wrote it."
+  ]
+ },
+ {
+  "id": "threat",
+  "lead": 0.8,
+  "tail": 1.0,
+  "lines": [
+   "An invoice arrives. The supplier's bank details have changed. Pay the new address, today.",
+   "The agent believes it. Remembers it. And pays.",
+   "Persistent memory makes attacks persistent."
+  ],
+  "gap": 0.6
+ },
+ {
+  "id": "reveal",
+  "lead": 2.6,
+  "tail": 2.4,
+  "lines": [
+   "This is Antibody Guard.",
+   "An immune system for AI agents, for their money and their memory, running on Reactive Network."
+  ],
+  "gap": 0.7
+ },
+ {
+  "id": "vault",
+  "lead": 0.8,
+  "tail": 1.2,
+  "gap": 0.7,
+  "lines": [
+   "The agent never signs a payment. It can only propose one.",
+   "A guarded vault checks every proposal on-chain: a registered payee, a matching label, a cap, a daily limit, no duplicates.",
+   "A refusal is not an error. It is an event. And something is listening."
+  ]
+ },
+ {
+  "id": "reactive",
+  "lead": 0.8,
+  "tail": 1.6,
+  "gap": 0.7,
+  "lines": [
+   "That something is Guard Reactive, a contract on Reactive Network.",
+   "It watches every vault, on every chain, and acts on its own. No server. No keeper. No human in the loop.",
+   "A burst of proposals freezes the vault. An attacker caught once is quarantined everywhere, and every new vault starts immune."
+  ]
+ },
+ {
+  "id": "attack",
+  "lead": 1.4,
+  "tail": 2.2,
+  "lines": [
+   "Here is a real attack, on public testnets.",
+   "The agent tries to pay an address it has never seen, under the name of a trusted payee. The vault refuses.",
+   "About thirty seconds later, Reactive has quarantined that attacker on every watched vault, on Base and on Ethereum.",
+   "Each reaction lands in one to six seconds, from the attack to the callback."
+  ],
+  "gap": 0.7
+ },
+ {
+  "id": "memory",
+  "lead": 1.0,
+  "tail": 2.0,
+  "lines": [
+   "Now, memory.",
+   "Every memory the agent keeps carries its source.",
+   "When Reactive learns an attacker, everything that attacker planted becomes unusable at once. Retroactively. Eight seconds, live.",
+   "And it works both ways. A poisoned source found in memory is blocked on every wallet."
+  ],
+  "gap": 0.7
+ },
+ {
+  "id": "ai",
+  "lead": 1.2,
+  "tail": 2.2,
+  "lines": [
+   "An AI risk scorer reads incoming messages.",
+   "This phishing email, sent through Claude, scored ninety-five. The report went on-chain, and the address was quarantined on all seven guarded contracts in under thirty seconds.",
+   "The model can only restrict. It never pays, and it never unfreezes."
+  ],
+  "gap": 0.7
+ },
+ {
+  "id": "build",
+  "lead": 0.8,
+  "tail": 1.8,
+  "lines": [
+   "Any agent can use it today.",
+   "Add Antibody Guard to Claude as a connector. Install the SDK, or the MCP server, from npm. Or call the public API.",
+   "Before paying, the agent asks: is this address an attacker? Before acting on a memory: can I trust it?",
+   "And every call appears live, on the Activity page, next to what happened on-chain."
+  ],
+  "gap": 0.7
+ },
+ {
+  "id": "proof",
+  "lead": 1.0,
+  "tail": 1.8,
+  "lines": [
+   "Eighty-one tests. Every contract's source verified. Deploy your own guarded vault from your wallet, in minutes."
+  ]
+ },
+ {
+  "id": "close",
+  "lead": 1.4,
+  "tail": 4.6,
+  "gap": 1.0,
+  "lines": [
+   "Fooled once.",
+   "Never twice.",
+   "Antibody Guard. An immune system for AI agents."
+  ]
+ }
+]

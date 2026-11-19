@@ -1,0 +1,13 @@
+# generated media and intermediate files: only the sources are kept
+*.wav
+*.mp3
+*.mp4
+*.png
+sfx/
+shots/
+vo/
+vo.json
+timeline.json
+cues.json
+segs.txt
+.venv/
