@@ -81,7 +81,7 @@ export function mountShell(current) {
         el(
           'div',
           { class: 'footer-grid' },
-          el('div', {}, brand(), el('p', {}, 'An immune system for agent wallets.')),
+          el('div', {}, brand(), el('p', {}, 'An immune system for AI agents: their money and their memory.')),
           col('Product', [['Walkthrough', '/walkthrough'], ['Security', '/security'], ['Evidence', '/evidence'], ['Console', '/app'], ['Try the AI', '/app/scorer']]),
           col('Build', [['Contracts', `${TREE}/contracts`, true], ['Build plan', `${BLOB}/docs/PLAN.md`, true], ['Reactive MCP notes', `${BLOB}/docs/reactive-mcp.md`, true]]),
           col('Project', [['Source', TREE, true], ['Reactive Network', 'https://dev.reactive.network', true], ['Omni Buildathon', 'https://dorahacks.io/hackathon/reactive-omni-buildathon', true]]),

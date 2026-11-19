@@ -41,3 +41,38 @@ jobs:
       - run: npm run web
       - run: test -s web-dist/assets/js/wallet/wallet.js && test -s web-dist/_redirects && test -s web-dist/evidence.json
       - run: bash -n install.sh
+
+  sdk:
+    name: SDK (unit tests, typecheck, build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: sdk
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+
+  mcp:
+    name: MCP server (typecheck, build)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - run: npm ci
+        working-directory: sdk
+      - run: node scripts/gen.mjs
+        working-directory: sdk
+      - run: npm ci
+        working-directory: mcp
+      - run: npx tsc -p tsconfig.json
+        working-directory: mcp
+      - run: npm run build
+        working-directory: mcp
