@@ -12,6 +12,8 @@
 [![Reactive Network](https://img.shields.io/badge/Reactive-Lasna%20testnet-2ee6c8)](https://lasna.reactscan.net/address/0x4d15b3af1a723d158f63f61002577e9a8b998440)
 [![Sourcify](https://img.shields.io/badge/contracts-verified%20on%20Sourcify-f2b84b)](https://repo.sourcify.dev/5318007/0x4d15b3af1a723d158f63f61002577e9a8b998440)
 [![Tests](https://img.shields.io/badge/Solidity%20tests-81%20passing-3fb950)](test)
+[![npm antibody-guard](https://img.shields.io/npm/v/antibody-guard?label=antibody-guard&color=2ee6c8)](https://www.npmjs.com/package/antibody-guard)
+[![npm antibody-guard-mcp](https://img.shields.io/npm/v/antibody-guard-mcp?label=antibody-guard-mcp&color=2ee6c8)](https://www.npmjs.com/package/antibody-guard-mcp)
 [![License](https://img.shields.io/badge/license-MIT-8b979f)](LICENSE)
 
 [**Live app**](https://antibody-guard-reactive.netlify.app) ·
@@ -352,8 +354,13 @@ claude mcp add --transport http antibody-guard https://antibody-guard-reactive.n
 
 `guard_check_address`, `guard_recall_memory`, `guard_audit_source`, `guard_attacker_details`,
 `guard_list_attackers`, `guard_list_vaults`, `guard_list_memories`, `guard_recent_decisions`,
-`guard_status` and `guard_score_message`. The stdio server ([`mcp/`](mcp)) adds
-`guard_propose_payment`, `guard_remember` and `guard_quarantine_source` when you give it testnet keys.
+`guard_status` and `guard_score_message`. The stdio server on npm
+([`antibody-guard-mcp`](https://www.npmjs.com/package/antibody-guard-mcp), source in [`mcp/`](mcp)) adds
+`guard_propose_payment`, `guard_remember` and `guard_quarantine_source` when you give it testnet keys:
+
+```sh
+claude mcp add antibody-guard -- npx -y antibody-guard-mcp
+```
 
 **API**: public, rate-limited, CORS open; [OpenAPI 3.1](https://antibody-guard-reactive.netlify.app/api/v1/openapi.json).
 
@@ -372,7 +379,11 @@ curl https://antibody-guard-reactive.netlify.app/api/v1/memories/baseSepolia/0xd
 | `POST` | `/api/v1/score` | The AI risk scorer |
 | `POST` | `/api/v1/watch` | `{ chain, address }`: GuardReactive watches your vault or memory |
 
-**SDK**: TypeScript on viem ([`sdk/`](sdk)).
+**SDK**: TypeScript on viem: [`antibody-guard`](https://www.npmjs.com/package/antibody-guard) on npm (source in [`sdk/`](sdk)).
+
+```sh
+npm install antibody-guard viem
+```
 
 ```ts
 import { GuardApi, deployMemory, guardedAgent } from 'antibody-guard';
@@ -434,8 +445,8 @@ Rate limits:
 ```
 contracts/     GuardVault, GuardMemory, GuardReactive, RiskOracle, IGuardVault
 test/          81 Solidity tests: vault and memory rules, a simulated two-chain relay, CRON, the oracle, gas
-sdk/           the TypeScript SDK (antibody-guard)
-mcp/           the MCP server (stdio), and the tools the hosted /mcp shares
+sdk/           the TypeScript SDK (npm: antibody-guard)
+mcp/           the MCP server (npm: antibody-guard-mcp), and the tools the hosted /mcp shares
 scripts/       deploy and run each phase; evidence, Sourcify verification, bridge, faucet, Reactive MCP
 agent/         Steward (the paying agent) and the AI risk scorer; any OpenAI-compatible model
 service/       the Guard service: indexer, /api/v1, hosted /mcp (Dockerfile, railway.json)

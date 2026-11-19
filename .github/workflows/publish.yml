@@ -51,7 +51,13 @@ jobs:
           if npm view "antibody-guard-mcp@$v" version >/dev/null 2>&1; then echo "antibody-guard-mcp@$v is already on npm"; exit 0; fi
           npm publish --access public --provenance || npm publish --access public
 
-      - name: Check what was published
+      - name: Check what was published (npm may take a few minutes to process a new version)
         run: |
-          npm view antibody-guard name version dist.tarball
-          npm view antibody-guard-mcp name version bin
+          for pkg in sdk mcp; do
+            name=$(node -p "require('./$pkg/package.json').name"); v=$(node -p "require('./$pkg/package.json').version")
+            for i in $(seq 1 30); do
+              [ "$(npm view "$name@$v" version 2>/dev/null)" = "$v" ] && { echo "$name@$v is live"; break; }
+              [ "$i" = 30 ] && { echo "::warning::$name@$v is not visible yet; npm is still processing it"; break; }
+              sleep 20
+            done
+          done
