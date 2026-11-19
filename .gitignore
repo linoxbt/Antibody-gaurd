@@ -10,3 +10,4 @@ wallet/dist/
 .env
 .env.*
 *.log
+!.env.example
